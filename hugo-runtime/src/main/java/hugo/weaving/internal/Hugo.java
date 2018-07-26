@@ -47,9 +47,10 @@ public class Hugo {
     }
 
     long startNanos = System.nanoTime();
+    long ts = System.currentTimeMillis();
 
     if (enabled) {
-      StackPrinter.shared().printIn(startNanos, in);
+      StackPrinter.shared().printIn(startNanos, ts, in);
     }
 
     Object result = joinPoint.proceed();
@@ -58,7 +59,7 @@ public class Hugo {
 
     if (enabled) {
       String out = exitMethod(joinPoint, result, lengthMillis);
-      StackPrinter.shared().printOut(startNanos, out);
+      StackPrinter.shared().printOut(startNanos, ts, out);
     }
 
     return result;

@@ -21,6 +21,8 @@ public class StackPrinter {
 
     private static final String TAG = "StackPrinter";
 
+    private static final String sSplitChar = " | ";
+
     private static StackPrinter sInstance = new StackPrinter();
 
     private AtomicInteger integer = new AtomicInteger();
@@ -33,29 +35,31 @@ public class StackPrinter {
 
     private Map<String, String> methodMap = new ConcurrentHashMap<>();
 
-    public void printIn(long tag, String method) {
-        java.util.Map<Thread, StackTraceElement[]> ts = Thread.getAllStackTraces();
-        StackTraceElement[] ste = ts.get(Thread.currentThread());
+    public void printIn(long tag, long ts, String method) {
+        java.util.Map<Thread, StackTraceElement[]> ats = Thread.getAllStackTraces();
+        StackTraceElement[] ste = ats.get(Thread.currentThread());
         int skip = 0;
         StringBuilder sb = new StringBuilder();
         sb.append('s')
-                .append(" | ").append(Thread.currentThread().getId())
-                .append(" | ").append(tag)
-                .append(" | ").append(method);
+                .append(sSplitChar).append(Thread.currentThread().getId())
+                .append(sSplitChar).append(tag)
+                .append(sSplitChar).append(ts)
+                .append(sSplitChar).append(method);
         for (StackTraceElement s : ste) {
             if (++skip > 5) {
-                sb.append(" | ").append(toCode(s.toString()));
+                sb.append(sSplitChar).append(toCode(s.toString()));
             }
         }
         line.add(sb.toString());
     }
 
-    public void printOut(long tag, String method) {
+    public void printOut(long tag, long ts, String method) {
         StringBuilder sb = new StringBuilder();
         sb.append('e')
-                .append(" | ").append(Thread.currentThread().getId())
-                .append(" | ").append(tag)
-                .append(" | ").append(method);
+                .append(sSplitChar).append(Thread.currentThread().getId())
+                .append(sSplitChar).append(tag)
+                .append(sSplitChar).append(ts)
+                .append(sSplitChar).append(method);
         line.add(sb.toString());
     }
 
@@ -75,9 +79,8 @@ public class StackPrinter {
 
         PrintStream print = new PrintStream(f);
 
-        line.add("begin method trace");
         for (Map.Entry<String, String> entry : methodMap.entrySet()) {
-            line.add(entry.getValue() + "=" + entry.getKey());
+            line.add(0, "d" + sSplitChar + entry.getValue() + "=" + entry.getKey());
         }
 
         for (String s : line) {

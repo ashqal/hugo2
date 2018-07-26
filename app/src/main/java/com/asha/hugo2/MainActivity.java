@@ -20,8 +20,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 long nano = System.nanoTime();
-                StackPrinter.shared().printIn(nano,"halo0");
-                StackPrinter.shared().printOut(nano,"halo0");
+                long ts = System.currentTimeMillis();
+                StackPrinter.shared().printIn(nano, ts, "halo0");
+                StackPrinter.shared().printOut(nano, ts, "halo0");
             }
         });
 
@@ -29,8 +30,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 long nano = System.nanoTime();
-                StackPrinter.shared().printIn(nano,"halo0");
-                StackPrinter.shared().printOut(nano,"halo0");
+                long ts = System.currentTimeMillis();
+                StackPrinter.shared().printIn(nano, ts, "halo0");
+                StackPrinter.shared().printOut(nano, ts,"halo0");
             }
         });
 
