@@ -92,7 +92,7 @@ public class Hugo {
       Trace.beginSection(section);
     }
 
-    return asTag(cls) + "," +  builder.toString();
+    return asTag(cls) + " " +  builder.toString();
   }
 
   private static String exitMethod(JoinPoint joinPoint, Object result, long lengthMillis) {
@@ -108,17 +108,18 @@ public class Hugo {
         && ((MethodSignature) signature).getReturnType() != void.class;
 
     StringBuilder builder = new StringBuilder("\u21E0 ")
-        .append(methodName)
         .append(" [")
         .append(lengthMillis)
-        .append("ms]");
+        .append("ms]")
+        .append(methodName)
+        ;
 
     if (hasReturnType) {
       builder.append(" = ");
       builder.append(Strings.toString(result));
     }
 
-    return asTag(cls) + "," + builder.toString();
+    return asTag(cls) + " " + builder.toString();
   }
 
   private static String asTag(Class<?> cls) {

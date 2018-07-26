@@ -43,7 +43,7 @@ public class StackPrinter {
                 .append(" | ").append(tag)
                 .append(" | ").append(method);
         for (StackTraceElement s : ste) {
-            if (++skip > 4) {
+            if (++skip > 5) {
                 sb.append(" | ").append(toCode(s.toString()));
             }
         }
