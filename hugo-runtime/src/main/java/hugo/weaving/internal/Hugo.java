@@ -3,7 +3,6 @@ package hugo.weaving.internal;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Trace;
-import android.util.Log;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -41,21 +40,31 @@ public class Hugo {
 
   @Around("method() || constructor()")
   public Object logAndExecute(ProceedingJoinPoint joinPoint) throws Throwable {
-    enterMethod(joinPoint);
+
+    String in = null;
+    if (enabled) {
+      in = enterMethod(joinPoint);
+    }
 
     long startNanos = System.nanoTime();
+
+    if (enabled) {
+      StackPrinter.shared().printIn(startNanos, in);
+    }
+
     Object result = joinPoint.proceed();
     long stopNanos = System.nanoTime();
     long lengthMillis = TimeUnit.NANOSECONDS.toMillis(stopNanos - startNanos);
 
-    exitMethod(joinPoint, result, lengthMillis);
+    if (enabled) {
+      String out = exitMethod(joinPoint, result, lengthMillis);
+      StackPrinter.shared().printOut(startNanos, out);
+    }
 
     return result;
   }
 
-  private static void enterMethod(JoinPoint joinPoint) {
-    if (!enabled) return;
-
+  private static String enterMethod(JoinPoint joinPoint) {
     CodeSignature codeSignature = (CodeSignature) joinPoint.getSignature();
 
     Class<?> cls = codeSignature.getDeclaringType();
@@ -63,7 +72,7 @@ public class Hugo {
     String[] parameterNames = codeSignature.getParameterNames();
     Object[] parameterValues = joinPoint.getArgs();
 
-    StringBuilder builder = new StringBuilder("asha \u21E2 ");
+    StringBuilder builder = new StringBuilder("\u21E2 ");
     builder.append(methodName).append('(');
     for (int i = 0; i < parameterValues.length; i++) {
       if (i > 0) {
@@ -78,17 +87,15 @@ public class Hugo {
       builder.append(" [Thread:\"").append(Thread.currentThread().getName()).append("\"]");
     }
 
-    Log.v(asTag(cls), builder.toString());
-
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
       final String section = builder.toString().substring(2);
       Trace.beginSection(section);
     }
+
+    return asTag(cls) + "," +  builder.toString();
   }
 
-  private static void exitMethod(JoinPoint joinPoint, Object result, long lengthMillis) {
-    if (!enabled) return;
-
+  private static String exitMethod(JoinPoint joinPoint, Object result, long lengthMillis) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
       Trace.endSection();
     }
@@ -100,7 +107,7 @@ public class Hugo {
     boolean hasReturnType = signature instanceof MethodSignature
         && ((MethodSignature) signature).getReturnType() != void.class;
 
-    StringBuilder builder = new StringBuilder("asha \u21E0 ")
+    StringBuilder builder = new StringBuilder("\u21E0 ")
         .append(methodName)
         .append(" [")
         .append(lengthMillis)
@@ -111,7 +118,7 @@ public class Hugo {
       builder.append(Strings.toString(result));
     }
 
-    Log.v(asTag(cls), builder.toString());
+    return asTag(cls) + "," + builder.toString();
   }
 
   private static String asTag(Class<?> cls) {
